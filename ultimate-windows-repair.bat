@@ -1,32 +1,46 @@
 @echo off
-setlocal
+:: Ultimate Windows Repair - Batch Script Version
 
-:: Initialization
-set "LogFile=repair_log.txt"
-set "ErrorCode=0"
+:: Set colors
+color 0A
 
-:: Redirect output to log file
-(
-echo Starting Ultimate Windows Repair - %DATE% %TIME%
+:: Title
+title Ultimate Windows Repair Script
 
-:: Function to handle errors
-:ErrorHandler
-if %ErrorCode% NEQ 0 (
-    echo Error occurred: %ErrorCode%
-    exit /b %ErrorCode%
+:: Function to check if a command executed successfully
+:check_error
+if %errorlevel% neq 0 (
+    echo Error occurred during the last command.
+    exit /b %errorlevel%
 )
 
-:: Example repair tasks
-echo Performing repair task 1...
-:: Your repair code here
-set "ErrorCode=%ERRORLEVEL%"
-call :ErrorHandler
+:: Remove temporary files
+echo Removing temporary files...
+del /q /f "%temp%\*"
+call :check_error
 
-echo Performing repair task 2...
-:: Your repair code here
-set "ErrorCode=%ERRORLEVEL%"
-call :ErrorHandler
+:: Repair system files
+echo Checking for system file integrity...
+sfc /scannow
+call :check_error
 
-echo Repair completed successfully.
-) >> %LogFile%
-exit /b 0
+:: Clean up disk
+echo Cleaning up disk...
+diskcleanup.exe /s
+call :check_error
+
+:: Disable unnecessary startup items
+echo Disabling unnecessary startup items...
+msconfig.exe /auto
+call :check_error
+
+:: Repair and reset apps
+echo Resetting apps...
+for /L %%i in (1,1,10) do (
+    wsreset.exe
+    call :check_error
+)
+
+:: Finished
+echo Ultimate Windows Repair script completed successfully!
+pause
